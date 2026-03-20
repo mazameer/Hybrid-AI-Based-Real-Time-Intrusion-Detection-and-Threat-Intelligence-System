@@ -26,3 +26,4 @@ This project is an AI-based intrusion detection system that monitors network tra
 ```bash
 pip install -r requirements.txt
 python backend/app.py
+python backend/attack_simulator.py
