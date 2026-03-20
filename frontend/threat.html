@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Threat Intelligence</title>
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+height:100vh;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+
+.header{
+background:#020617;
+padding:15px;
+text-align:center;
+font-size:22px;
+position:relative;
+}
+
+.back-btn{
+position:absolute;
+left:15px;
+top:12px;
+background:#22c55e;
+border:none;
+padding:8px 14px;
+border-radius:6px;
+cursor:pointer;
+color:black;
+font-weight:bold;
+}
+
+.container{
+flex:1;
+padding:20px;
+overflow:hidden;
+}
+
+.table-box{
+background:#1e293b;
+border-radius:10px;
+height:100%;
+overflow:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#020617;
+padding:10px;
+position:sticky;
+top:0;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #334155;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+<button class="back-btn" onclick="goBack()">← Back</button>
+Threat Intelligence
+</div>
+
+<div class="container">
+
+<div class="table-box">
+
+<table id="table">
+<tr>
+<th>IP Address</th>
+<th>Threat Type</th>
+<th>Status</th>
+</tr>
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+function goBack(){
+window.location.href="dashboard.html"
+}
+
+async function update(){
+
+const res=await fetch("http://localhost:5000/alerts")
+const data=await res.json()
+
+const table=document.getElementById("table")
+
+table.innerHTML="<tr><th>IP Address</th><th>Threat</th><th>Status</th></tr>"
+
+data.slice(0,15).forEach(a=>{
+
+let row=document.createElement("tr")
+
+row.innerHTML=`
+<td>${a.ip}</td>
+<td>${a.type}</td>
+<td style="color:#ef4444">Blocked</td>
+`
+
+table.appendChild(row)
+
+})
+
+}
+
+setInterval(update,3000)
+
+</script>
+
+</body>
+</html>

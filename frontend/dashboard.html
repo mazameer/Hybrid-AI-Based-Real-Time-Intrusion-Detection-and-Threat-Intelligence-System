@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Security Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+}
+
+.navbar{
+background:#020617;
+padding:15px;
+display:flex;
+justify-content:center;
+gap:30px;
+}
+
+.navbar a{
+color:white;
+text-decoration:none;
+font-weight:bold;
+}
+
+.header{
+text-align:center;
+padding:20px;
+font-size:26px;
+}
+
+.container{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+padding:20px;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:10px;
+}
+
+.chart{
+height:250px;
+}
+
+.alerts{
+max-height:250px;
+overflow:auto;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+<a href="dashboard.html">Dashboard</a>
+<a href="analytics.html">Traffic Analytics</a>
+<a href="threat.html">Threat Intelligence</a>
+
+</div>
+
+<div class="header">
+Real-Time AI Intrusion Detection Dashboard
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h3>Attack Distribution</h3>
+
+<div class="chart">
+<canvas id="pieChart"></canvas>
+</div>
+
+</div>
+
+
+<div class="card alerts">
+
+<h3>Detected Alerts</h3>
+
+<div id="alerts"></div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Live Traffic</h3>
+
+<div class="chart">
+<canvas id="lineChart"></canvas>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Top Attacking IP</h3>
+
+<table id="ipTable" width="100%">
+<tr><th>IP</th><th>Attacks</th></tr>
+</table>
+
+</div>
+
+</div>
+
+
+<script>
+
+let normal=0
+let attack=0
+
+const pieChart=new Chart(document.getElementById("pieChart"),{
+
+type:"doughnut",
+
+data:{
+labels:["Normal","Attack"],
+datasets:[{
+data:[1,1],
+backgroundColor:["#22c55e","#ef4444"]
+}]
+}
+
+})
+
+
+const lineChart=new Chart(document.getElementById("lineChart"),{
+
+type:"line",
+
+data:{
+labels:[],
+datasets:[
+{label:"Normal",borderColor:"#22c55e",data:[]},
+{label:"Attack",borderColor:"#ef4444",data:[]}
+]
+}
+
+})
+
+
+async function update(){
+
+const res=await fetch("http://localhost:5000/alerts")
+
+const data=await res.json()
+
+const list=document.getElementById("alerts")
+
+list.innerHTML=""
+
+normal=0
+attack=0
+
+const ipMap={}
+
+data.forEach(a=>{
+
+let div=document.createElement("div")
+
+div.innerText=`${a.time} | ${a.ip} | ${a.type}`
+
+list.appendChild(div)
+
+if(a.type=="Normal") normal++
+else{
+
+attack++
+
+if(!ipMap[a.ip]) ipMap[a.ip]=0
+
+ipMap[a.ip]++
+
+}
+
+})
+
+
+pieChart.data.datasets[0].data=[normal,attack]
+
+pieChart.update()
+
+
+const now=new Date().toLocaleTimeString()
+
+lineChart.data.labels.push(now)
+
+lineChart.data.datasets[0].data.push(normal)
+
+lineChart.data.datasets[1].data.push(attack)
+
+lineChart.update()
+
+
+const table=document.getElementById("ipTable")
+
+table.innerHTML="<tr><th>IP</th><th>Attacks</th></tr>"
+
+for(const ip in ipMap){
+
+let row=document.createElement("tr")
+
+row.innerHTML=`<td>${ip}</td><td>${ipMap[ip]}</td>`
+
+table.appendChild(row)
+
+}
+
+}
+
+setInterval(update,2000)
+
+</script>
+
+</body>
+
+</html>
